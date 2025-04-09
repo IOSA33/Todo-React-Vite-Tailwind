@@ -1,4 +1,8 @@
 import { useState, useEffect} from 'react';
+import React from 'react';
+import { DndContext, KeyboardSensor, PointerSensor, TouchSensor, closestCenter, useSensor , useSensors } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import SortableItem from './SortableItem';
 
 
 function TodoList() {
@@ -20,39 +24,42 @@ function TodoList() {
 
     function addTask() {
         if (newTask.trim() !== "") {
-            setTasks([...tasks, { text: newTask, done: false }]);
+            setTasks([...tasks, { id: crypto.randomUUID(), text: newTask, done: false }]);
             setNewTask("");
         }
     }
     
-    function deleteTask(index) {
-        const updatedList = tasks.filter((_, i) => i !== index);
+    function deleteTask(id) {
+        const updatedList = tasks.filter(task => task.id !== id);
         setTasks(updatedList);
     }
 
-    function moveTaskUp(index) {
-        if(index > 0) {
-            const updatedList = [...tasks];
-            [updatedList[index], updatedList[index - 1]] = [updatedList[index - 1], updatedList[index]];
-            setTasks(updatedList);
-        }
-    }
-
-    function moveTaskDown(index) {
-        if(index < tasks.length - 1) {
-            const updatedList = [...tasks];
-            [updatedList[index], updatedList[index + 1]] = [updatedList[index + 1], updatedList[index]];
-            setTasks(updatedList);
-        }
-    }
-
-    function done(index) {
-      const updatedList = [...tasks];
-      updatedList[index].done = !updatedList[index].done;
+    function done(id) {
+      const updatedList = tasks.map(task =>
+        task.id === id ? { ...task, done: !task.done } : task
+      );
       setTasks(updatedList);
     }
 
+    const sensors = useSensors(
+      useSensor(PointerSensor),
+      useSensor(TouchSensor),
+      useSensor(KeyboardSensor, {
+        coordinateGetter: sortableKeyboardCoordinates,
+      })
+    );
 
+    function handleDragEnd(event) {
+      const { active, over } = event;
+
+      if (active.id !== over.id) {
+          setTasks((tasks) => {
+              const oldIndex = tasks.findIndex(task => task.id === active.id);
+              const newIndex = tasks.findIndex(task => task.id === over.id);
+              return arrayMove(tasks, oldIndex, newIndex);
+          });
+      }
+    }
 
 
     return (
@@ -76,43 +83,51 @@ function TodoList() {
                       onClick={addTask} > Add  </button>
                   </div>
 
-            
-                <ul className="space-y-2">
-                  {tasks.map((task, index) => (
-                    <li key={index} className="justify-between bg-white p-3 rounded-lg shadow-md hover:bg-gray-100 transition duration-300">
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                <SortableContext items={tasks} strategy={verticalListSortingStrategy}>
 
-                      <div onClick={() => done(index)}>
-                        <button 
-                          className="text-green-500 hover:text-green-600 transition duration-200"> 
-                          {task.done ? '✅' : '❌'} </button>
-                        <span className=" cursor-pointer text-lg font-semibold text-gray-700 break-all"> {task.text} </span>
-                      </div>
+                  <ul className="space-y-2">
+                    {tasks.map((task) => (
+                      <SortableItem  key={task.id} id={task.id}>
 
-                      <div className="flex justify-between space-x-2">
-                        <button
-                          className="text-green-500 hover:text-green-600 transition duration-200"
-                          onClick={() => moveTaskUp(index)}> ☝️ 
-                        </button>
+                        <li className="mb-2 justify-between bg-white p-3 rounded-lg shadow-md hover:bg-gray-100 transition duration-300">
+                            <div className="flex items-center h-3">
+                              <input 
+                                type='checkbox' 
+                                onChange={() => done(task.id)}
+                                checked={task.done}
+                                className="appearance-none w-5 h-5 border-2 border-gray-300 rounded-md checked:bg-green-500 checked:border-green-500
+                                        relative cursor-pointer transition-colors"
+                              />
+                              <span className="ml-2 cursor-pointer text-lg font-semibold text-gray-700 break-all">
+                                {task.text}
+                              </span>
+                            </div>
 
-                        <button
-                          className="text-yellow-500 hover:text-yellow-600 transition duration-200"
-                          onClick={() => moveTaskDown(index)}> 👇 
-                        </button>
+                            <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteTask(task.id);
+                                }} className="mt-3 ml-auto text-red-500 hover:text-red-600 transition duration-200" >
+                                🔥
+                            </button>
 
-                        <button
-                          className="ml-auto text-red-500 hover:text-red-600 transition duration-200"
-                          onClick={() => deleteTask(index)} > 🔥 
-                        </button>
-                      </div>
 
-                    </li> ))}
-                </ul>
+                        </li>
+
+                      </SortableItem> 
+                    ))}
+                  </ul>
+
+                </SortableContext>
+              </DndContext>
+
               </div>
             </div>
         </div>
       );
       
-      
+    
       
 
 }
