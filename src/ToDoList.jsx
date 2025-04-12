@@ -13,6 +13,7 @@ function TodoList() {
     });
 
     const [newTask, setNewTask] = useState("");
+    const[deleted, setNewDelete] = useState([]);
 
     useEffect(() => {
         localStorage.setItem('Todos', JSON.stringify(tasks));
@@ -30,8 +31,13 @@ function TodoList() {
     }
     
     function deleteTask(id) {
-        const updatedList = tasks.filter(task => task.id !== id);
-        setTasks(updatedList);
+      const taskToDelete = tasks.find(task => task.id === id);
+      const updatedTasks = tasks.filter(task => task.id !== id);
+      
+      if (taskToDelete) {
+          setTasks(updatedTasks);
+          setNewDelete(prev => [...prev, taskToDelete]);
+      }
     }
 
     function done(id) {
@@ -39,6 +45,14 @@ function TodoList() {
         task.id === id ? { ...task, done: !task.done } : task
       );
       setTasks(updatedList);
+    }
+
+    function bucket(id) {
+      if (deleted.length !== 0) {
+        setTasks(prev => [...prev, deleted[deleted.length - 1]]);
+        setNewDelete([]);
+      }
+
     }
 
     const sensors = useSensors(
@@ -65,7 +79,7 @@ function TodoList() {
     return (
         <div  className="mx-auto content-center">
             <div className="mx-auto max-w-6xl p-1">
-              <h1 className="mx-auto m-3 mt-6 mb-6 text-2xl">To Do List</h1>
+              <h1 className="mx-auto m-3 mt-6 mb-6 text-2xl"> To Do List  v1.2</h1>
 
               <div className="mx-auto p-3 bg-gray-50 rounded-lg shadow-lg">
 
@@ -78,10 +92,23 @@ function TodoList() {
                         onChange={handleInputChange} 
                       />
 
-                    <button
-                      className="px-10 h-10 mb-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
-                      onClick={addTask} > Add  </button>
+                    <div className='flex items-center gap-4'> 
+                        <button
+                          className="px-9 h-10 mb-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+                          onClick={addTask} > Add 
+                        </button>
+
+                      <button 
+                        className='px-5 h-10 mb-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition'
+                        onClick={bucket}
+                      > 
+                        🗑️Reset
+                      </button>
+                    </div>
+
                   </div>
+
+                
 
               <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                 <SortableContext items={tasks} strategy={verticalListSortingStrategy}>
@@ -92,27 +119,16 @@ function TodoList() {
 
                         <li className="mb-2 justify-between bg-white p-3 rounded-lg shadow-md hover:bg-gray-100 transition duration-300">
                             <div className="flex items-center h-3">
-                              <input 
-                                type='checkbox' 
-                                onChange={() => done(task.id)}
-                                checked={task.done}
-                                className="appearance-none w-5 h-5 border-2 border-gray-300 rounded-md checked:bg-green-500 checked:border-green-500
-                                        relative cursor-pointer transition-colors"
-                              />
+                              <button
+                                  onClick={() => deleteTask(task.id)} 
+                                  className="cursor-pointer text-red-500 hover:text-red-600 transition duration-200" >
+                                  🔥
+                              </button>
+
                               <span className="ml-2 cursor-pointer text-lg font-semibold text-gray-700 break-all">
                                 {task.text}
                               </span>
                             </div>
-
-                            <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  deleteTask(task.id);
-                                }} className="mt-3 ml-auto text-red-500 hover:text-red-600 transition duration-200" >
-                                🔥
-                            </button>
-
-
                         </li>
 
                       </SortableItem> 

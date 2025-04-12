@@ -31,7 +31,7 @@ export default function SortableItem({ id, children }) {
       position: 'absolute',
       top: 0,
       right: 0,
-      width: '97%',
+      width: '90%',
       height: '100%',
       zIndex: 1,
     }}
