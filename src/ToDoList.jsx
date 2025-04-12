@@ -83,7 +83,7 @@ function TodoList() {
     return (
         <div  className="mx-auto content-center">
             <div className="mx-auto max-w-6xl p-1">
-              <h1 className="mx-auto m-3 mt-6 mb-6 text-2xl"> To Do List  v1.2</h1>
+              <h1 className="mx-auto m-3 mt-6 mb-6 text-2xl"> To Do List  v1.3</h1>
 
               <div className="mx-auto p-3 bg-gray-50 rounded-lg shadow-lg">
 
@@ -106,7 +106,7 @@ function TodoList() {
                         className='px-5 h-10 mb-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition'
                         onClick={bucket}
                       > 
-                        🗑️Reset
+                        🗑️
                       </button>
                     </div>
 
@@ -117,22 +117,29 @@ function TodoList() {
               <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                 <SortableContext items={tasks} strategy={verticalListSortingStrategy}>
 
-                  <ul className="space-y-2">
+                  <ul className=''>
                     {tasks.map((task) => (
                       <SortableItem  key={task.id} id={task.id}>
 
-                        <li className="mb-2 justify-between bg-white p-3 rounded-lg shadow-md hover:bg-gray-100 transition duration-300">
-                            <div className="flex items-center h-3">
-                              <button
-                                  onClick={() => deleteTask(task.id)} 
-                                  className="cursor-pointer text-red-500 hover:text-red-600 transition duration-200" >
-                                  🔥
-                              </button>
+                        <li className="mb-2 bg-white p-3 rounded-lg shadow-md hover:bg-gray-100 transition duration-300 flex justify-between items-start">
+                          <div className="flex items-center flex-grow">
+                            <input 
+                              type='checkbox' 
+                              onChange={() => done(task.id)}
+                              checked={task.done}
+                              className="appearance-none w-5 h-5 border-2 border-gray-300 rounded-md checked:bg-green-500 checked:border-green-500
+                                      relative cursor-pointer transition-colors flex-shrink-0"
+                            />
+                            <span className="ml-2 text-lg font-semibold text-gray-700 break-all flex-grow">
+                              {task.text}
+                            </span>
+                          </div>
 
-                              <span className="ml-2 cursor-pointer text-lg font-semibold text-gray-700 break-all">
-                                {task.text}
-                              </span>
-                            </div>
+                          <button
+                            onClick={() => deleteTask(task.id)} 
+                            className="ml-3 hover:text-red-600 transition duration-200" >
+                            🔥
+                          </button>
                         </li>
 
                       </SortableItem> 

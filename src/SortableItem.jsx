@@ -30,9 +30,10 @@ export default function SortableItem({ id, children }) {
       cursor: 'grab',
       position: 'absolute',
       top: 0,
-      right: 0,
-      width: '90%',
+      right: '29px',
+      left: '29px',
       height: '100%',
+      width: 'auto',
       zIndex: 1,
     }}
   />
