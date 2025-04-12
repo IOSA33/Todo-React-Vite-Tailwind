@@ -48,11 +48,15 @@ function TodoList() {
     }
 
     function bucket(id) {
-      if (deleted.length !== 0) {
-        setTasks(prev => [...prev, deleted[deleted.length - 1]]);
-        setNewDelete([]);
+      if (deleted.length > 4) {
+        setNewDelete(prev => prev.slice(1));
       }
 
+      if (deleted.length > 0) {
+        const taskToRestore = deleted[deleted.length - 1];
+        setTasks(prev => [...prev, taskToRestore]);
+        setNewDelete(prev => prev.slice(0, prev.length - 1));
+      }
     }
 
     const sensors = useSensors(
